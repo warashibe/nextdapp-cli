@@ -71,7 +71,7 @@ const updateApis = ({ json, name }) => {
 const updateStatic = ({ name, pre }) => {
   const static_path = resolve(`node_modules/${name}/static`)
   if (fs.existsSync(static_path)) {
-    const static_tar = resolve(`static/${pre}`)
+    const static_tar = resolve(`public/static/${pre}`)
     fs.copySync(static_path, static_tar)
     console.log("static assets copied")
   }

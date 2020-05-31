@@ -56,7 +56,7 @@ const updateApis = ({ json, name }) => {
 }
 
 const updateStatic = ({ name, pre }) => {
-  const static_tar = resolve(`static/${pre}`)
+  const static_tar = resolve(`public/static/${pre}`)
   try {
     fs.unlinkSync(static_tar)
   } catch (e) {
