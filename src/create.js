@@ -12,7 +12,7 @@ export default dist => {
     console.error("Error: git is not installed.")
     process.exit()
   } else {
-    const app_path = path.resolve(__dirname, "../app")
+    const app_path = "https://github.com/warashibe/next-dapp-bare.git"
     exec(
       `git clone ${app_path} ${target_path} && rm -rf ${target_path}/.git`,
       (error, stdout, stderr) => {

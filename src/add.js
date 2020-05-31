@@ -51,15 +51,14 @@ const updateProps = ({ pre, props_path, name }) => {
 
 const updateApis = ({ json, name }) => {
   if (R.xNil(json.api)) {
-    const api_path = resolve(`src/pages/api`)
+    const api_path = resolve(`pages/api`)
     if (!fs.existsSync(api_path)) {
       fs.mkdirSync(api_path)
     }
     for (let k in json.api || {}) {
-      const func_path = resolve(`src/pages/api/${json.api[k]}.js`)
+      const func_path = resolve(`pages/api/${json.api[k]}.js`)
       let api = [
         `const path = require("path")`,
-        `require("dotenv").config(path.resolve(__dirname, "../../../.env"))`,
         `import { ${k} } from "${name}"`,
         `import conf from "../../conf"`,
         `export default ${k}({ conf: conf })`
@@ -217,7 +216,7 @@ export default async name => {
   await installPlugin(name)
   const json = getJSON(name)
   updateEpics({ name, js_path, json, pre })
-  updateProps({ name, props_path, name })
+  updateProps({ name, props_path, pre })
   updateApis({ json, name })
   updateStatic({ name, pre })
   updateFirestore({ name, pre })

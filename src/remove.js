@@ -158,7 +158,7 @@ export default async name => {
   isRoot(js_path, props_path)
   const json = getJSON(name)
   updateEpics({ name, js_path, pre })
-  updateProps({ name, props_path, name })
+  updateProps({ name, props_path, pre })
   updateApis({ json, name })
   updateStatic({ name, pre })
   updateFirestore({ name, pre })
