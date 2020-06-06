@@ -2,65 +2,79 @@ import R from "ramdam"
 import path from "path"
 import fs from "fs-extra"
 import { spawn } from "child_process"
-import { getJSON, isRoot, resolve, spawnp } from "./util"
 
-const installPlugin = async name => {
+import {
+  getPre,
+  getJSON,
+  isRoot,
+  resolve,
+  spawnp,
+  getPlugins,
+  updatePlugins,
+  updateEpics,
+  updateProps
+} from "./util"
+
+const installPlugin = async ({ name, tar_path, noinstall }) => {
+  if (noinstall !== true) {
+    try {
+      await spawnp("yarn", ["add", name])
+      console.log(`${name} installed!`)
+    } catch (error) {
+      console.error(`install error: ${error}`)
+      process.exit()
+    }
+  }
+}
+
+const updateComponents = ({
+  name,
+  pre,
+  components_path,
+  json,
+  tar_path,
+  noinstall
+}) => {
+  const src =
+    noinstall === false && R.xNil(tar_path) ? "../../" + tar_path : name
+  if (fs.existsSync(components_path)) {
+    try {
+      fs.removeSync(components_path)
+      console.log(`components removed: ${components_path}`)
+    } catch (e) {
+      console.log(e)
+    }
+  } else {
+    console.log(`path doesn't exist: ${components_path}`)
+  }
   try {
-    await spawnp("yarn", ["add", name])
-    console.log(`${name} installed!`)
-  } catch (error) {
-    console.error(`install error: ${error}`)
-    process.exit()
+    fs.mkdirSync(components_path)
+  } catch (e) {}
+
+  for (const v of json.components || []) {
+    let code = [
+      `import bind from "nd/bind"`,
+      `import { ${v} as _ } from "${src}"`,
+      `export default bind(_.Component, _.props, _.funcs)`
+    ]
+    fs.writeFileSync(`${components_path}/${v}.js`, code.join("\n"))
   }
 }
 
-const updateEpics = ({ name, js_path, json, pre }) => {
-  const js = R.filter(v => {
-    return (
-      /^\s*$/.test(v) === false &&
-      new RegExp(`from +"${name}"`).test(v) === false
-    )
-  })(fs.readFileSync(js_path, "utf-8").split("\n"))
-
-  let exp = []
-  console.log(`checking plugin epics...`)
-  console.log()
-  for (let v of json.epics || []) {
-    exp.push(` ${v} as ${v}$${pre}`)
-    console.log(`${v}$${pre}`)
-  }
-  console.log()
-  js.push(`export {${exp.join(",")} } from "${name}"`)
-  fs.writeFileSync(js_path, js.join("\n"))
-  console.log(`epics has been updated!`)
-}
-
-const updateProps = ({ pre, props_path, name }) => {
-  const props = R.filter(
-    v =>
-      /^\s*$/.test(v) === false &&
-      new RegExp(`mergeProps\\("${pre}"`).test(v) === false &&
-      v !== "export default props"
-  )(fs.readFileSync(props_path, "utf-8").split("\n"))
-  console.log(`checking plugin props...`)
-  props.push(`mergeProps("${pre}", require("${name}").init)`)
-  props.push(`export default props`)
-  fs.writeFileSync(props_path, props.join("\n"))
-  console.log(`props has been updated!`)
-}
-
-const updateApis = ({ json, name }) => {
+const updateApis = ({ json, name, tar_path, pre, noinstall = false }) => {
   if (R.xNil(json.api)) {
     const api_path = resolve(`pages/api`)
     if (!fs.existsSync(api_path)) {
       fs.mkdirSync(api_path)
     }
+    const src =
+      noinstall === false && R.xNil(tar_path) ? "../../" + tar_path : name
     for (let k in json.api || {}) {
-      const func_path = resolve(`pages/api/${json.api[k]}.js`)
+      const func_path = resolve(`pages/api/${json.api[k]}_${pre}.js`)
       let api = [
         `const path = require("path")`,
-        `import { ${k} } from "${name}"`,
-        `import conf from "../../conf"`,
+        `import { ${k} } from "${src}"`,
+        `import conf from "nd.config"`,
         `export default ${k}({ conf: conf })`
       ]
       fs.writeFileSync(func_path, api.join("\n"))
@@ -68,8 +82,10 @@ const updateApis = ({ json, name }) => {
   }
 }
 
-const updateStatic = ({ name, pre }) => {
-  const static_path = resolve(`node_modules/${name}/static`)
+const updateStatic = ({ name, pre, tar_path }) => {
+  const static_path = R.isNil(tar_path)
+    ? resolve(`node_modules/${name}/static`)
+    : resolve(`${tar_path}/static`)
   if (fs.existsSync(static_path)) {
     const static_tar = resolve(`public/static/${pre}`)
     fs.copySync(static_path, static_tar)
@@ -77,12 +93,12 @@ const updateStatic = ({ name, pre }) => {
   }
 }
 
-const updateFirestore = ({ name, pre }) => {
-  const firestore_path = resolve(
-    `node_modules/${name}/firebase/firestore.rules`
-  )
+const updateFirestore = ({ name, pre, tar_path }) => {
+  const firestore_path = R.isNil(tar_path)
+    ? resolve(`node_modules/${name}/firebase/firestore.rules`)
+    : resolve(`${tar_path}/firebase/firestore.rules`)
   const firestore_tar_path = resolve(`firebase/firestore.rules`)
-
+  const firebase_path = resolve(`firebase`)
   if (fs.existsSync(firestore_path)) {
     let new_rules2 = [
       `rules_version = '2';`,
@@ -115,6 +131,10 @@ const updateFirestore = ({ name, pre }) => {
         new_rules.push(v)
       }
     }
+    if (!fs.existsSync(firebase_path)) {
+      fs.mkdirSync(firebase_path)
+    }
+
     new_rules.reverse()
     new_rules.unshift(`    // ${pre}-start`)
     new_rules.push(`    // ${pre}-end`)
@@ -166,12 +186,21 @@ const updateFirestore = ({ name, pre }) => {
     new_rules2.push(`  }`)
     new_rules2.push(`}`)
     console.log(new_rules2.join("\n"))
-    fs.writeFileSync(firestore_tar_path, new_tar_rules.join("\n"))
+    console.log(firestore_tar_path)
+    fs.writeFileSync(firestore_tar_path, new_rules2.join("\n"))
   }
 }
 
-const updateFunctions = ({ json, pre, name }) => {
+const updateFunctions = ({ json, pre, name, tar_path }) => {
   if (R.xNil(json.functions)) {
+    const firebase_path = resolve(`firebase`)
+    if (!fs.existsSync(firebase_path)) {
+      fs.mkdirSync(firebase_path)
+    }
+    const functions_path = resolve(`firebase/functions`)
+    if (!fs.existsSync(functions_path)) {
+      fs.mkdirSync(functions_path)
+    }
     let npms = []
     let funcs = [`// ${pre}-start`]
     for (const k in json.functions || {}) {
@@ -207,19 +236,32 @@ const updateFunctions = ({ json, pre, name }) => {
   }
 }
 
-export default async name => {
-  const pre = name.replace(/^nd-/, "")
+export default async (name, tar, noinstall = false) => {
+  const json_path = resolve("nd/.plugins.json")
+  let plugins = getPlugins({ json_path })
+  console.log(plugins)
+  const pre = getPre(name)
+  const components_path = resolve(`nd/${pre}`)
+  const tar_path = R.when(R.xNil, v => v.replace(/\/$/, ""))(tar)
   const package_path = resolve("package.json")
-  const js_path = resolve(".nextdapp.js")
-  const props_path = resolve(".nextdapp-props.js")
-  isRoot(js_path, props_path)
-  await installPlugin(name)
-  const json = getJSON(name)
-  updateEpics({ name, js_path, json, pre })
-  updateProps({ name, props_path, pre })
-  updateApis({ json, name })
-  updateStatic({ name, pre })
-  updateFirestore({ name, pre })
-  updateFunctions({ name, pre, json })
+  const js_path = resolve("nd/.nextdapp.js")
+  const props_path = resolve("nd/.nextdapp-props.js")
+  const pjson = isRoot(json_path)
+  await installPlugin({ name, tar_path, noinstall })
+  const json = getJSON({ name, tar_path })
+  plugins[pre] = R.mergeLeft(
+    { name: name, key: pre, path: tar, noinstall: noinstall },
+    json
+  )
+
+  updateEpics({ plugins, js_path, noinstall })
+  updateProps({ plugins, props_path, noinstall })
+  updateApis({ json, name, tar_path, noinstall, pre })
+  updateStatic({ name, pre, tar_path })
+  updateComponents({ name, pre, components_path, json, tar_path, noinstall })
+  updateFirestore({ name, pre, tar_path })
+  updateFunctions({ name, pre, json, tar_path })
+  updatePlugins({ json: plugins, json_path })
+
   process.exit()
 }
