@@ -22,5 +22,5 @@ switch (command) {
     remove(name, path, noinstall)
     break
   default:
-    console.log("command not found").default
+    console.log("command not found")
 }

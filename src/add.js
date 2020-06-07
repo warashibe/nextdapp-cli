@@ -35,8 +35,7 @@ const updateComponents = ({
   tar_path,
   noinstall
 }) => {
-  const src =
-    noinstall === false && R.xNil(tar_path) ? "../../" + tar_path : name
+  const src = noinstall === true ? "../../" + tar_path : name
   if (fs.existsSync(components_path)) {
     try {
       fs.removeSync(components_path)
@@ -67,14 +66,13 @@ const updateApis = ({ json, name, tar_path, pre, noinstall = false }) => {
     if (!fs.existsSync(api_path)) {
       fs.mkdirSync(api_path)
     }
-    const src =
-      noinstall === false && R.xNil(tar_path) ? "../../" + tar_path : name
+    const src = noinstall === true ? "../../" + tar_path : name
     for (let k in json.api || {}) {
       const func_path = resolve(`pages/api/${json.api[k]}_${pre}.js`)
       let api = [
         `const path = require("path")`,
         `import { ${k} } from "${src}"`,
-        `import conf from "nd.config"`,
+        `import conf from "nd/conf"`,
         `export default ${k}({ conf: conf })`
       ]
       fs.writeFileSync(func_path, api.join("\n"))

@@ -25,8 +25,7 @@ export const updateEpics = ({ plugins, js_path, noinstall = false }) => {
     console.log(`checking plugin epics...`)
     console.log()
     const json = plugins[pre]
-    const src =
-      noinstall === false && R.xNil(json.path) ? "../" + json.path : json.name
+    const src = json.noinstall === true ? "../" + json.path : json.name
     for (let v of json.epics || []) {
       exp.push(` ${v} as ${v}$${pre}`)
       console.log(`${v}$${pre}`)
@@ -52,8 +51,7 @@ export const updateProps = ({ plugins, props_path, noinstall = false }) => {
   console.log(`checking plugin props...`)
   for (let pre in plugins) {
     const json = plugins[pre]
-    const src =
-      noinstall === false && R.xNil(json.path) ? "../" + json.path : json.name
+    const src = json.noinstall === true ? "../" + json.path : json.name
     props.push(`mergeProps("${pre}", require("${src}").init)`)
   }
   props.push(`export default props`)

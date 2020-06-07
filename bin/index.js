@@ -32,5 +32,5 @@ switch (command) {
     break;
 
   default:
-    console.log("command not found")["default"];
+    console.log("command not found");
 }
