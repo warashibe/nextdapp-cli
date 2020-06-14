@@ -6,6 +6,10 @@ var name = process.argv[3];
 var path = process.argv[4];
 var noinstall = process.argv[5] === "noinstall";
 
+var remove = require("../lib/remove")["default"];
+
+var add = require("../lib/add")["default"];
+
 switch (command) {
   case "list":
     var list = require("../lib/list")["default"];
@@ -20,15 +24,16 @@ switch (command) {
     break;
 
   case "add":
-    var add = require("../lib/add")["default"];
-
     add(name, path, noinstall);
     break;
 
   case "remove":
-    var remove = require("../lib/remove")["default"];
-
     remove(name, path, noinstall);
+    break;
+
+  case "update":
+    remove(name, path, noinstall);
+    add(name, path, noinstall);
     break;
 
   default:
