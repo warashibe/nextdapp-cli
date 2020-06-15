@@ -1,4 +1,5 @@
-import R from "ramdam"
+import { complement, isNil, mergeLeft, when, filter } from "ramda"
+const xNil = complement(isNil)
 import path from "path"
 import fs from "fs-extra"
 import { spawn } from "child_process"
@@ -61,7 +62,7 @@ const updateComponents = ({
 }
 
 const updateApis = ({ json, name, tar_path, pre, noinstall = false }) => {
-  if (R.xNil(json.api)) {
+  if (xNil(json.api)) {
     const api_path = resolve(`pages/api`)
     if (!fs.existsSync(api_path)) {
       fs.mkdirSync(api_path)
@@ -81,7 +82,7 @@ const updateApis = ({ json, name, tar_path, pre, noinstall = false }) => {
 }
 
 const updateStatic = ({ name, pre, tar_path }) => {
-  const static_path = R.isNil(tar_path)
+  const static_path = isNil(tar_path)
     ? resolve(`node_modules/${name}/static`)
     : resolve(`${tar_path}/static`)
   if (fs.existsSync(static_path)) {
@@ -92,7 +93,7 @@ const updateStatic = ({ name, pre, tar_path }) => {
 }
 
 const updateFirestore = ({ name, pre, tar_path }) => {
-  const firestore_path = R.isNil(tar_path)
+  const firestore_path = isNil(tar_path)
     ? resolve(`node_modules/${name}/firebase/firestore.rules`)
     : resolve(`${tar_path}/firebase/firestore.rules`)
   const firestore_tar_path = resolve(`firebase/firestore.rules`)
@@ -105,7 +106,7 @@ const updateFirestore = ({ name, pre, tar_path }) => {
     ]
 
     let rm = 0
-    const rules = R.filter(v => {
+    const rules = filter(v => {
       if (
         new RegExp(`service cloud\.firestore`).test(v) === true ||
         RegExp(`match /databases/\\{database\\}/documents`).test(v) === true
@@ -140,7 +141,7 @@ const updateFirestore = ({ name, pre, tar_path }) => {
     if (fs.existsSync(firestore_tar_path)) {
       let tar = false
       let rm = 0
-      let tar_rules = R.filter(v => {
+      let tar_rules = filter(v => {
         if (
           new RegExp(`service cloud\.firestore`).test(v) === true ||
           RegExp(`match /databases/\\{database\\}/documents`).test(v) === true
@@ -190,7 +191,7 @@ const updateFirestore = ({ name, pre, tar_path }) => {
 }
 
 const updateFunctions = ({ json, pre, name, tar_path }) => {
-  if (R.xNil(json.functions)) {
+  if (xNil(json.functions)) {
     const firebase_path = resolve(`firebase`)
     if (!fs.existsSync(firebase_path)) {
       fs.mkdirSync(firebase_path)
@@ -214,7 +215,7 @@ const updateFunctions = ({ json, pre, name, tar_path }) => {
     const func_path = resolve(`firebase/functions/index.js`)
     if (fs.existsSync(func_path)) {
       let tar = false
-      const ex_funcs = R.filter(v => {
+      const ex_funcs = filter(v => {
         let isend = false
         if (new RegExp(`// ${pre}-start`).test(v) === true) {
           tar = true
@@ -240,14 +241,14 @@ export default async (name, tar, noinstall = false) => {
   console.log(plugins)
   const pre = getPre(name)
   const components_path = resolve(`nd/${pre}`)
-  const tar_path = R.when(R.xNil, v => v.replace(/\/$/, ""))(tar)
+  const tar_path = when(xNil, v => v.replace(/\/$/, ""))(tar)
   const package_path = resolve("package.json")
   const js_path = resolve("nd/.nextdapp.js")
   const props_path = resolve("nd/.nextdapp-props.js")
   const pjson = isRoot(json_path)
   await installPlugin({ name, tar_path, noinstall })
   const json = getJSON({ name, tar_path })
-  plugins[pre] = R.mergeLeft(
+  plugins[pre] = mergeLeft(
     { name: name, key: pre, path: tar, noinstall: noinstall },
     json
   )

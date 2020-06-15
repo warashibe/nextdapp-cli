@@ -1865,29 +1865,10 @@ process-nextick-args@~2.0.0:
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-2.0.1.tgz#7820d9b16120cc55ca9ae7792680ae7dba6d7fe2"
   integrity sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==
 
-ramda-adjunct@^2.25.0:
-  version "2.27.0"
-  resolved "https://registry.yarnpkg.com/ramda-adjunct/-/ramda-adjunct-2.27.0.tgz#674b62acd3545d1ae8395dbe6f160bc87611937d"
-  integrity sha512-Z0+z+nEcbAguWSqlBJXLh3g4d2H82s0koDTiBm4WHkv02eXP82otRWRAqbHfoXQbUtb89XKxMz1NJKsQmC2yGA==
-
-ramda-extension@^0.10.1:
-  version "0.10.3"
-  resolved "https://registry.yarnpkg.com/ramda-extension/-/ramda-extension-0.10.3.tgz#27026970889730c2c3d214e4d3138002d9553eb2"
-  integrity sha512-6B7tlSL6C7TR/hspLLibmowPEJRkX5pgAN3Mb2DhwFqQIT+KSOtx3fGNdJh3MyViLRil67hFlkeZHOMwBKd+yw==
-
 ramda@^0.27.0:
   version "0.27.0"
   resolved "https://registry.yarnpkg.com/ramda/-/ramda-0.27.0.tgz#915dc29865c0800bf3f69b8fd6c279898b59de43"
   integrity sha512-pVzZdDpWwWqEVVLshWUHjNwuVP7SfcmPraYuqocJp1yo2U1R7P+5QAfDhdItkuoGqIBnBYrtPp7rEPqDn9HlZA==
-
-ramdam@^1.6.2:
-  version "1.6.2"
-  resolved "https://registry.yarnpkg.com/ramdam/-/ramdam-1.6.2.tgz#6420a6d7dee2633a98ef23b69be8f3cdec406bca"
-  integrity sha512-CZ2TfFZ6XcrdxMIswBPv6yl7DMNR/nwRb+2lHZXsc3H6Ogu7yl6RsRrz3wZQrbIhEXFAa/xS/QpeoSNPGVsJbw==
-  dependencies:
-    ramda "^0.27.0"
-    ramda-adjunct "^2.25.0"
-    ramda-extension "^0.10.1"
 
 readable-stream@^2.0.2:
   version "2.3.7"

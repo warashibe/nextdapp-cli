@@ -1,7 +1,8 @@
+import { complement, isNil } from "ramda"
+const xNil = complement(isNil)
 import fs from "fs-extra"
 import path from "path"
 import { spawn } from "child_process"
-import R from "ramdam"
 export const isRoot = json_path => {
   if (!fs.existsSync(json_path)) {
     console.error(`Error: not in the root directory: ${__dirname}`)
@@ -50,10 +51,11 @@ export const updateProps = ({ plugins, props_path, noinstall = false }) => {
 
   console.log(`checking plugin props...`)
   for (let pre in plugins) {
+    if (pre === "core") continue
     const json = plugins[pre]
     const src = json.noinstall === true ? "../" + json.path : json.name
-    props.push(`import * as "${pre} from "${src}/lib/init)`)
-    props.push(`mergeProps("${pre}", ${src})`)
+    props.push(`import { default as ${pre} } from "${src}/lib/init"`)
+    props.push(`mergeProps("${pre}", ${pre})`)
   }
   props.push(`export default props`)
   fs.writeFileSync(props_path, props.join("\n"))
@@ -80,7 +82,7 @@ export const spawnp = (cmd, args = []) => {
 }
 
 export const getJSON = ({ name, tar_path }) => {
-  const json_path = R.xNil(tar_path)
+  const json_path = xNil(tar_path)
     ? resolve(`${tar_path}/nextdapp.json`)
     : resolve(`node_modules/${name}/nextdapp.json`)
   let json = null

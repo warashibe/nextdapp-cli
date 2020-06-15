@@ -1,4 +1,5 @@
-import R from "ramdam"
+import { complement, isNil, when, filter } from "ramda"
+const xNil = complement(isNil)
 import path from "path"
 import fs from "fs-extra"
 import { exec } from "child_process"
@@ -28,7 +29,7 @@ const uninstallPlugin = async ({ name, tar_path, noinstall }) => {
 }
 
 const updateApis = ({ json, name, tar_path, pre }) => {
-  if (R.xNil(json.api)) {
+  if (xNil(json.api)) {
     const api_path = resolve(`pages/api`)
     if (!fs.existsSync(api_path)) {
       fs.mkdirSync(api_path)
@@ -78,7 +79,7 @@ const updateFirestore = ({ name, pre, tar_path }) => {
     let new_tar_rules = []
     let tar = false
     let rm = 0
-    let tar_rules = R.filter(v => {
+    let tar_rules = filter(v => {
       if (
         new RegExp(`service cloud\.firestore`).test(v) === true ||
         RegExp(`match /databases/\\{database\\}/documents`).test(v) === true
@@ -123,7 +124,7 @@ const updateFirestore = ({ name, pre, tar_path }) => {
 }
 
 const updateFunctions = ({ json, pre, name, tar_path }) => {
-  if (R.xNil(json.functions)) {
+  if (xNil(json.functions)) {
     let npms = []
     for (const k in json.functions || {}) {
       npms.push(k)
@@ -131,7 +132,7 @@ const updateFunctions = ({ json, pre, name, tar_path }) => {
     const func_path = resolve(`firebase/functions/index.js`)
     if (fs.existsSync(func_path)) {
       let tar = false
-      const ex_funcs = R.filter(v => {
+      const ex_funcs = filter(v => {
         let isend = false
         if (new RegExp(`// ${pre}-start`).test(v) === true) {
           tar = true
@@ -158,7 +159,7 @@ export default async (name, tar, noinstall = false) => {
   const pre = getPre(name)
   delete plugins[pre]
   const components_path = resolve(`nd/${pre}`)
-  const tar_path = R.when(R.xNil, v => v.replace(/\/$/, ""))(tar)
+  const tar_path = when(xNil, v => v.replace(/\/$/, ""))(tar)
   const package_path = resolve("package.json")
   const js_path = resolve("nd/.nextdapp.js")
   const props_path = resolve("nd/.nextdapp-props.js")
