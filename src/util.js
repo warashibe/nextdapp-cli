@@ -18,15 +18,15 @@ export const getPre = name =>
     : name
 export const resolve = to => path.resolve(process.cwd(), to)
 
-export const updateEpics = ({ plugins, js_path, noinstall = false }) => {
+export const updateFuncs = ({ plugins, js_path, noinstall = false }) => {
   let js = []
   for (let pre in plugins) {
     let exp = []
-    console.log(`checking plugin epics...`)
+    console.log(`checking plugin funcs...`)
     console.log()
     const json = plugins[pre]
     const src = json.noinstall === true ? "../" + json.path : json.name
-    for (let v of json.epics || []) {
+    for (let v of json.funcs || []) {
       exp.push(` ${v} as ${v}$${pre}`)
       console.log(`${v}$${pre}`)
     }
@@ -35,7 +35,7 @@ export const updateEpics = ({ plugins, js_path, noinstall = false }) => {
   console.log()
 
   fs.writeFileSync(js_path, js.join("\n"))
-  console.log(`epics has been updated!`)
+  console.log(`funcs has been updated!`)
 }
 
 export const updateProps = ({ plugins, props_path, noinstall = false }) => {
@@ -52,7 +52,8 @@ export const updateProps = ({ plugins, props_path, noinstall = false }) => {
   for (let pre in plugins) {
     const json = plugins[pre]
     const src = json.noinstall === true ? "../" + json.path : json.name
-    props.push(`mergeProps("${pre}", require("${src}").init)`)
+    props.push(`import * as "${pre} from "${src}/lib/init)`)
+    props.push(`mergeProps("${pre}", ${src})`)
   }
   props.push(`export default props`)
   fs.writeFileSync(props_path, props.join("\n"))

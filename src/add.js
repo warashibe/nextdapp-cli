@@ -11,7 +11,7 @@ import {
   spawnp,
   getPlugins,
   updatePlugins,
-  updateEpics,
+  updateFuncs,
   updateProps
 } from "./util"
 
@@ -252,7 +252,7 @@ export default async (name, tar, noinstall = false) => {
     json
   )
 
-  updateEpics({ plugins, js_path, noinstall })
+  updateFuncs({ plugins, js_path, noinstall })
   updateProps({ plugins, props_path, noinstall })
   updateApis({ json, name, tar_path, noinstall, pre })
   updateStatic({ name, pre, tar_path })
