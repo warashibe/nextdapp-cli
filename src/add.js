@@ -35,7 +35,7 @@ const updateComponents = ({
   tar_path,
   noinstall
 }) => {
-  const src = noinstall === true ? "../../" + tar_path : name
+  const src = `${noinstall === true ? "../../" + tar_path : name}/lib`
   if (fs.existsSync(components_path)) {
     try {
       fs.removeSync(components_path)
@@ -53,8 +53,8 @@ const updateComponents = ({
   for (const v of json.components || []) {
     let code = [
       `import bind from "nd/bind"`,
-      `import { ${v} as _ } from "${src}"`,
-      `export default bind(_.Component, _.props, _.funcs)`
+      `import * as _ from "${src}/components/${v}"`,
+      `export default bind(_.Component, _.props)`
     ]
     fs.writeFileSync(`${components_path}/${v}.js`, code.join("\n"))
   }
