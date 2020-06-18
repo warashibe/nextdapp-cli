@@ -13,14 +13,14 @@ export default async dist => {
     process.exit()
   } else {
     const app_path = "https://github.com/warashibe/next-dapp-bare.git"
-    const code = await spawnp("git", ["clone", app_path, target_path])
+    const code = await spawnp("git", [
+      "clone",
+      "--depth=1",
+      app_path,
+      target_path
+    ])
     if (code !== 0) {
       console.error(`clone error`)
-      process.exit()
-    }
-    const code2 = await spawnp("rm", ["-rf", `${target_path}/.git`])
-    if (code2 !== 0) {
-      console.error(`.git remove error`)
       process.exit()
     }
     fs.copySync(`${target_path}/nd/conf.sample.js`, `${target_path}/nd/conf.js`)
