@@ -11,30 +11,30 @@ var remove = require("../lib/remove")["default"];
 var add = require("../lib/add")["default"];
 
 switch (command) {
+  /*
   case "list":
-    var list = require("../lib/list")["default"];
-
-    list();
-    break;
-
+    const list = require("../lib/list").default
+    list()
+    break
+  */
   case "create":
     var create = require("../lib/create")["default"];
 
     create(name);
     break;
 
+  /*
   case "add":
-    add(name, path, noinstall);
-    break;
-
+    add(name, path, noinstall)
+    break
   case "remove":
-    remove(name, path, noinstall);
-    break;
-
+    remove(name, path, noinstall)
+  break
   case "update":
-    remove(name, path, noinstall);
-    add(name, path, noinstall);
-    break;
+    remove(name, path, noinstall)
+    add(name, path, noinstall)
+    break  
+  */
 
   default:
     console.log("command not found");

@@ -7,14 +7,17 @@ const noinstall = process.argv[5] === "noinstall"
 const remove = require("../lib/remove").default
 const add = require("../lib/add").default
 switch (command) {
+  /*
   case "list":
     const list = require("../lib/list").default
     list()
     break
+  */
   case "create":
     const create = require("../lib/create").default
     create(name)
-    break
+  break
+  /*
   case "add":
     add(name, path, noinstall)
     break
@@ -25,6 +28,7 @@ switch (command) {
     remove(name, path, noinstall)
     add(name, path, noinstall)
     break  
+  */
   default:
     console.log("command not found")
 }
