@@ -6,12 +6,6 @@ const namespace = process.argv[4]
 const remove = require("../lib/remove").default
 const add = require("../lib/add").default
 switch (command) {
-  /*
-  case "list":
-    const list = require("../lib/list").default
-    list()
-    break
-  */
   case "create":
     const create = require("../lib/create").default
     create(name)
@@ -22,12 +16,6 @@ switch (command) {
   case "remove":
     remove(name,namespace)
   break
-  /*
-  case "update":
-    remove(name, namespace)
-    add(name, namespace)
-    break  
-  */
   default:
     console.log("command not found")
 }

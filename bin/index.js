@@ -10,12 +10,6 @@ var remove = require("../lib/remove")["default"];
 var add = require("../lib/add")["default"];
 
 switch (command) {
-  /*
-  case "list":
-    const list = require("../lib/list").default
-    list()
-    break
-  */
   case "create":
     var create = require("../lib/create")["default"];
 
@@ -29,13 +23,6 @@ switch (command) {
   case "remove":
     remove(name, namespace);
     break;
-
-  /*
-  case "update":
-    remove(name, namespace)
-    add(name, namespace)
-    break  
-  */
 
   default:
     console.log("command not found");

@@ -95,9 +95,9 @@ export const spawnp = (cmd, args = []) => {
   })
 }
 
-export const getJSON = ({ pre, tar_path }) => {
-  const json_path = xNil(tar_path)
-    ? resolve(`${tar_path}/nextdapp.json`)
+export const getJSON = ({ pre, namespace }) => {
+  const json_path = xNil(namespace)
+    ? resolve(`nd/${namespace}/nextdapp.json`)
     : resolve(`nd/${pre}/nextdapp.json`)
   let json = null
   if (!fs.existsSync(json_path)) {
