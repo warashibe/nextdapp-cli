@@ -13,61 +13,27 @@ import {
   getPlugins,
   updatePlugins,
   updateFuncs,
-  updateProps
+  updateProps,
+  modName
 } from "./util"
 
-const installPlugin = async ({ name, tar_path, noinstall }) => {
-  if (noinstall !== true) {
-    try {
-      await spawnp("yarn", ["add", name])
-      console.log(`${name} installed!`)
-    } catch (error) {
-      console.error(`install error: ${error}`)
-      process.exit()
-    }
-  }
-}
-
-const updateComponents = ({
-  name,
-  pre,
-  components_path,
-  json,
-  tar_path,
-  noinstall
-}) => {
-  const src = `${noinstall === true ? "../../" + tar_path : name}/lib`
-  if (fs.existsSync(components_path)) {
-    try {
-      fs.removeSync(components_path)
-      console.log(`components removed: ${components_path}`)
-    } catch (e) {
-      console.log(e)
-    }
-  } else {
-    console.log(`path doesn't exist: ${components_path}`)
-  }
+const installPlugin = async ({ name }) => {
   try {
-    fs.mkdirSync(components_path)
-  } catch (e) {}
-
-  for (const v of json.components || []) {
-    let code = [
-      `import bind from "nd/bind"`,
-      `import * as _ from "${src}/components/${v}"`,
-      `export default bind(_.Component, _.props)`
-    ]
-    fs.writeFileSync(`${components_path}/${v}.js`, code.join("\n"))
+    await spawnp("bit", ["import", name])
+    console.log(`${name} installed!`)
+  } catch (error) {
+    console.error(`install error: ${error}`)
+    process.exit()
   }
 }
 
-const updateApis = ({ json, name, tar_path, pre, noinstall = false }) => {
+const updateApis = ({ json, name, pre }) => {
   if (xNil(json.api)) {
     const api_path = resolve(`pages/api`)
     if (!fs.existsSync(api_path)) {
       fs.mkdirSync(api_path)
     }
-    const src = noinstall === true ? "../../" + tar_path : name
+    const src = name
     for (let k in json.api || {}) {
       const func_path = resolve(`pages/api/${json.api[k]}_${pre}.js`)
       let api = [
@@ -81,10 +47,8 @@ const updateApis = ({ json, name, tar_path, pre, noinstall = false }) => {
   }
 }
 
-const updateStatic = ({ name, pre, tar_path }) => {
-  const static_path = isNil(tar_path)
-    ? resolve(`node_modules/${name}/static`)
-    : resolve(`${tar_path}/static`)
+const updateStatic = ({ name, pre }) => {
+  const static_path = resolve(`node_modules/${name}/static`)
   if (fs.existsSync(static_path)) {
     const static_tar = resolve(`public/static/${pre}`)
     fs.copySync(static_path, static_tar)
@@ -92,10 +56,10 @@ const updateStatic = ({ name, pre, tar_path }) => {
   }
 }
 
-const updateFirestore = ({ name, pre, tar_path }) => {
-  const firestore_path = isNil(tar_path)
-    ? resolve(`node_modules/${name}/firebase/firestore.rules`)
-    : resolve(`${tar_path}/firebase/firestore.rules`)
+const updateFirestore = ({ name, pre }) => {
+  const firestore_path = resolve(
+    `node_modules/${name}/firebase/firestore.rules`
+  )
   const firestore_tar_path = resolve(`firebase/firestore.rules`)
   const firebase_path = resolve(`firebase`)
   if (fs.existsSync(firestore_path)) {
@@ -190,7 +154,7 @@ const updateFirestore = ({ name, pre, tar_path }) => {
   }
 }
 
-const updateFunctions = ({ json, pre, name, tar_path }) => {
+const updateFunctions = ({ json, pre, name }) => {
   if (xNil(json.functions)) {
     const firebase_path = resolve(`firebase`)
     if (!fs.existsSync(firebase_path)) {
@@ -235,31 +199,33 @@ const updateFunctions = ({ json, pre, name, tar_path }) => {
   }
 }
 
-export default async (name, tar, noinstall = false) => {
+export default async (name, namespace = null) => {
   const json_path = resolve("nd/.plugins.json")
   let plugins = getPlugins({ json_path })
   console.log(plugins)
   const pre = getPre(name)
+  name = modName(name)
+  console.log(pre)
+  console.log(name)
   const components_path = resolve(`nd/${pre}`)
-  const tar_path = when(xNil, v => v.replace(/\/$/, ""))(tar)
   const package_path = resolve("package.json")
   const js_path = resolve("nd/.nextdapp.js")
   const props_path = resolve("nd/.nextdapp-props.js")
   const pjson = isRoot(json_path)
-  await installPlugin({ name, tar_path, noinstall })
-  const json = getJSON({ name, tar_path })
+  await installPlugin({ name })
+  const json = getJSON({ pre })
+  const core = json.core || false
+
   plugins[pre] = mergeLeft(
-    { name: name, key: pre, path: tar, noinstall: noinstall },
+    { name: name, key: pre, core: core, namespace: namespace },
     json
   )
-
-  updateFuncs({ plugins, js_path, noinstall })
-  updateProps({ plugins, props_path, noinstall })
-  updateApis({ json, name, tar_path, noinstall, pre })
-  updateStatic({ name, pre, tar_path })
-  updateComponents({ name, pre, components_path, json, tar_path, noinstall })
-  updateFirestore({ name, pre, tar_path })
-  updateFunctions({ name, pre, json, tar_path })
+  updateFuncs({ plugins, js_path, pre })
+  updateProps({ plugins, props_path })
+  //updateApis({ json, name, pre })
+  //updateStatic({ name, pre })
+  //updateFirestore({ name, pre })
+  //updateFunctions({ name, pre, json })
   updatePlugins({ json: plugins, json_path })
 
   process.exit()

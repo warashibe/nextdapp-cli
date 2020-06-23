@@ -11,25 +11,35 @@ export const isRoot = json_path => {
   return JSON.parse(fs.readFileSync(json_path, "utf8"))
 }
 export const getPre = name =>
-  /^@/.test(name)
+  /\//.test(name)
     ? name
         .split("/")
         .slice(1)
         .join("/")
     : name
+
+export const modName = name =>
+  /\//.test(name) ? name : `warashibe.nextdapp/${name}`
+
 export const resolve = to => path.resolve(process.cwd(), to)
 
-export const updateFuncs = ({ plugins, js_path, noinstall = false }) => {
+export const updateFuncs = ({ pre, plugins, js_path }) => {
   let js = []
   for (let pre in plugins) {
     let exp = []
     console.log(`checking plugin funcs...`)
     console.log()
     const json = plugins[pre]
-    const src = json.noinstall === true ? "../" + json.path : json.name
+    const src = `nd/${pre}`
     for (let v of json.funcs || []) {
-      exp.push(` ${v} as ${v}$${pre}`)
-      console.log(`${v}$${pre}`)
+      const ns =
+        json.namespace !== null
+          ? `$${json.namespace}`
+          : json.core
+          ? ""
+          : `$${pre}`
+      exp.push(` ${v} as ${v}${ns}`)
+      console.log(`${v}${ns}`)
     }
     js.push(`export {${exp.join(",")} } from "${src}"`)
   }
@@ -39,12 +49,12 @@ export const updateFuncs = ({ plugins, js_path, noinstall = false }) => {
   console.log(`funcs has been updated!`)
 }
 
-export const updateProps = ({ plugins, props_path, noinstall = false }) => {
+export const updateProps = ({ plugins, props_path }) => {
   const props = [
     "let props = {}",
-    "const mergeProps = (name, obj) => {",
+    "const mergeProps = (name, obj, core = false, namespace = null) => {",
     "  for (const k in obj) {",
-    "    props[`${k}$${name}`] = obj[k]",
+    '    props[`${k}${namespace !== null ? `$${namespace}` : core ? "" : `$${name}`}`] = obj[k]',
     "  }",
     "}"
   ]
@@ -53,9 +63,13 @@ export const updateProps = ({ plugins, props_path, noinstall = false }) => {
   for (let pre in plugins) {
     if (pre === "core") continue
     const json = plugins[pre]
-    const src = json.noinstall === true ? "../" + json.path : json.name
-    props.push(`import { default as ${pre} } from "${src}/lib/init"`)
-    props.push(`mergeProps("${pre}", ${pre})`)
+    const src = `nd/${pre}`
+    props.push(`import { init as ${pre} } from "${src}"`)
+    props.push(
+      `mergeProps("${pre}", ${pre}, ${json.core ? "true" : "false"}, ${
+        json.namespace !== null ? `"${json.namespace}"` : "null"
+      })`
+    )
   }
   props.push(`export default props`)
   fs.writeFileSync(props_path, props.join("\n"))
@@ -81,10 +95,10 @@ export const spawnp = (cmd, args = []) => {
   })
 }
 
-export const getJSON = ({ name, tar_path }) => {
+export const getJSON = ({ pre, tar_path }) => {
   const json_path = xNil(tar_path)
     ? resolve(`${tar_path}/nextdapp.json`)
-    : resolve(`node_modules/${name}/nextdapp.json`)
+    : resolve(`nd/${pre}/nextdapp.json`)
   let json = null
   if (!fs.existsSync(json_path)) {
     console.log("json not found...:" + json_path)

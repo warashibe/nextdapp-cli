@@ -2,8 +2,7 @@
 
 const command = process.argv[2]
 const name = process.argv[3]
-const path = process.argv[4]
-const noinstall = process.argv[5] === "noinstall"
+const namespace = process.argv[4]
 const remove = require("../lib/remove").default
 const add = require("../lib/add").default
 switch (command) {
@@ -17,16 +16,16 @@ switch (command) {
     const create = require("../lib/create").default
     create(name)
   break
-  /*
   case "add":
-    add(name, path, noinstall)
+    add(name,namespace)
     break
   case "remove":
-    remove(name, path, noinstall)
+    remove(name,namespace)
   break
+  /*
   case "update":
-    remove(name, path, noinstall)
-    add(name, path, noinstall)
+    remove(name, namespace)
+    add(name, namespace)
     break  
   */
   default:

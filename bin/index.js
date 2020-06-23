@@ -3,8 +3,7 @@
 
 var command = process.argv[2];
 var name = process.argv[3];
-var path = process.argv[4];
-var noinstall = process.argv[5] === "noinstall";
+var namespace = process.argv[4];
 
 var remove = require("../lib/remove")["default"];
 
@@ -23,16 +22,18 @@ switch (command) {
     create(name);
     break;
 
-  /*
   case "add":
-    add(name, path, noinstall)
-    break
+    add(name, namespace);
+    break;
+
   case "remove":
-    remove(name, path, noinstall)
-  break
+    remove(name, namespace);
+    break;
+
+  /*
   case "update":
-    remove(name, path, noinstall)
-    add(name, path, noinstall)
+    remove(name, namespace)
+    add(name, namespace)
     break  
   */
 
