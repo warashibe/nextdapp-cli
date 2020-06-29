@@ -7,7 +7,6 @@ import { spawn } from "child_process"
 import {
   getPre,
   getJSON,
-  isRoot,
   resolve,
   spawnp,
   getPlugins,
@@ -41,7 +40,6 @@ export default async (name, namespace = null) => {
   const package_path = resolve("package.json")
   const js_path = resolve("nd/.nextdapp.js")
   const props_path = resolve("nd/.nextdapp-props.js")
-  const pjson = isRoot(json_path)
   await installPlugin({ name, namespace })
   const json = getJSON({ pre, namespace })
   const core = json.core || false
@@ -50,7 +48,7 @@ export default async (name, namespace = null) => {
     { name: name, key: pre, core: core, namespace: namespace },
     json
   )
-  updateFuncs({ plugins, js_path, pre })
+  updateFuncs({ plugins, js_path })
   updateProps({ plugins, props_path })
   updatePlugins({ json: plugins, json_path })
 

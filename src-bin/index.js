@@ -10,6 +10,10 @@ switch (command) {
     const create = require("../lib/create").default
     create(name)
   break
+  case "refresh":
+    const refresh = require("../lib/refresh").default
+    refresh()
+  break
   case "add":
     add(name,namespace)
     break

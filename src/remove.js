@@ -7,7 +7,6 @@ import { sync as commandExists } from "command-exists"
 import {
   getPre,
   getJSON,
-  isRoot,
   resolve,
   spawnp,
   getPlugins,
@@ -38,10 +37,9 @@ export default async (name, namespace) => {
   const package_path = resolve("package.json")
   const js_path = resolve("nd/.nextdapp.js")
   const props_path = resolve("nd/.nextdapp-props.js")
-  const pjson = isRoot(json_path)
   const json = getJSON({ pre, namespace })
 
-  updateFuncs({ plugins, js_path, pre })
+  updateFuncs({ plugins, js_path })
   updateProps({ plugins, props_path })
 
   await uninstallPlugin({ pre, namespace })

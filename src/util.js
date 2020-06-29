@@ -23,7 +23,7 @@ export const modName = name =>
 
 export const resolve = to => path.resolve(process.cwd(), to)
 
-export const updateFuncs = ({ pre, plugins, js_path }) => {
+export const updateFuncs = ({ plugins, js_path }) => {
   let js = []
   for (let pre in plugins) {
     let exp = []
@@ -32,12 +32,11 @@ export const updateFuncs = ({ pre, plugins, js_path }) => {
     const json = plugins[pre]
     const src = `nd/${pre}`
     for (let v of json.funcs || []) {
-      const ns =
-        json.namespace !== null
-          ? `$${json.namespace}`
-          : json.core
-          ? ""
-          : `$${pre}`
+      const ns = xNil(json.namespace)
+        ? `$${json.namespace}`
+        : json.core
+        ? ""
+        : `$${pre}`
       exp.push(` ${v} as ${v}${ns}`)
       console.log(`${v}${ns}`)
     }
@@ -67,7 +66,7 @@ export const updateProps = ({ plugins, props_path }) => {
     props.push(`import { init as ${pre} } from "${src}"`)
     props.push(
       `mergeProps("${pre}", ${pre}, ${json.core ? "true" : "false"}, ${
-        json.namespace !== null ? `"${json.namespace}"` : "null"
+        xNil(json.namespace) ? `"${json.namespace}"` : "null"
       })`
     )
   }

@@ -16,6 +16,12 @@ switch (command) {
     create(name);
     break;
 
+  case "refresh":
+    var refresh = require("../lib/refresh")["default"];
+
+    refresh();
+    break;
+
   case "add":
     add(name, namespace);
     break;
