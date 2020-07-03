@@ -30,13 +30,13 @@ export const updateFuncs = ({ plugins, js_path }) => {
     console.log(`checking plugin funcs...`)
     console.log()
     const json = plugins[pre]
-    const src = `nd/${pre}`
+    const src = `nd/${json.namespace || pre}`
     for (let v of json.funcs || []) {
       const ns = xNil(json.namespace)
         ? `$${json.namespace}`
         : json.core
-        ? ""
-        : `$${pre}`
+          ? ""
+          : `$${pre}`
       exp.push(` ${v} as ${v}${ns}`)
       console.log(`${v}${ns}`)
     }
@@ -62,7 +62,7 @@ export const updateProps = ({ plugins, props_path }) => {
   for (let pre in plugins) {
     if (pre === "core") continue
     const json = plugins[pre]
-    const src = `nd/${pre}`
+    const src = `nd/${json.namespace || pre}`
     props.push(`import { init as ${pre} } from "${src}"`)
     props.push(
       `mergeProps("${pre}", ${pre}, ${json.core ? "true" : "false"}, ${
