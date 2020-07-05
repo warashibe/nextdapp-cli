@@ -18,7 +18,7 @@ import {
 
 const installPlugin = async ({ name, namespace }) => {
   try {
-    let param = ["import", name]
+    let param = ["import", name, "--override"]
     if (xNil(namespace)) {
       param = concat(param, ["-p", `nd/${namespace}`])
     }
