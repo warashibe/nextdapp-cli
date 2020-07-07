@@ -13,7 +13,8 @@ import {
   updatePlugins,
   updateFuncs,
   updateProps,
-  modName
+  modName,
+  updateApis
 } from "./util"
 
 const uninstallPlugin = async ({ pre }) => {
@@ -44,5 +45,6 @@ export default async (name, namespace) => {
 
   await uninstallPlugin({ pre, namespace })
   updatePlugins({ json: plugins, json_path })
+  updateApis({ plugins })
   process.exit()
 }

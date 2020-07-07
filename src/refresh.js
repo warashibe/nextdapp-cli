@@ -21,7 +21,8 @@ import {
   updatePlugins,
   updateFuncs,
   updateProps,
-  modName
+  modName,
+  updateApis
 } from "./util"
 
 const makePlugins = () => {
@@ -49,6 +50,7 @@ export default async () => {
   updateFuncs({ plugins, js_path })
   updateProps({ plugins, props_path })
   updatePlugins({ json: plugins, json_path })
+  updateApis({ plugins })
 
   process.exit()
 }

@@ -3,6 +3,7 @@ const xNil = complement(isNil)
 import fs from "fs-extra"
 import path from "path"
 import { spawn } from "child_process"
+
 export const isRoot = json_path => {
   if (!fs.existsSync(json_path)) {
     console.error(`Error: not in the root directory: ${__dirname}`)
@@ -35,8 +36,8 @@ export const updateFuncs = ({ plugins, js_path }) => {
       const ns = xNil(json.namespace)
         ? `$${json.namespace}`
         : json.core
-          ? ""
-          : `$${pre}`
+        ? ""
+        : `$${pre}`
       exp.push(` ${v} as ${v}${ns}`)
       console.log(`${v}${ns}`)
     }
@@ -137,4 +138,34 @@ export const updatePlugins = ({ json_path, json }) => {
     process.exit()
   }
   return json
+}
+
+export const updateApis = ({ plugins }) => {
+  const api_root_path = resolve(`pages/api`)
+  if (!fs.existsSync(api_root_path)) {
+    fs.mkdirSync(api_root_path)
+  }
+  for (let pre in plugins) {
+    if (pre === "core") continue
+    const json = plugins[pre]
+    const pname = json.namespace || pre
+    const api_path = resolve(`pages/api/${pname}`)
+    if (xNil(json.api)) {
+      if (!fs.existsSync(api_path)) {
+        fs.mkdirSync(api_path)
+      }
+      const src = `nd/${pname}`
+      for (let k in json.api || {}) {
+        const func_path = resolve(`pages/api/${pname}/${json.api[k]}.js`)
+        let api = [
+          `const path = require("path")`,
+          `import { ${k} } from "${src}"`,
+          `export default ${k}`
+        ]
+        fs.writeFileSync(func_path, api.join("\n"))
+      }
+    } else if (fs.existsSync(api_path)) {
+      fs.unlinkSync(api_path)
+    }
+  }
 }
