@@ -22,14 +22,14 @@ import {
   updateFuncs,
   updateProps,
   modName,
-  updateApis
+  updateApis,
+  updateFunctions
 } from "./util"
 
 const makePlugins = () => {
-  const dirs = o(
-    pluck("name"),
-    filter(v => v.isDirectory())
-  )(fs.readdirSync(resolve("nd/"), { withFileTypes: true }))
+  const dirs = o(pluck("name"), filter(v => v.isDirectory()))(
+    fs.readdirSync(resolve("nd/"), { withFileTypes: true })
+  )
   let plugins = {}
   for (let v of dirs) {
     const nextdapp_json = resolve(`nd/${v}/nextdapp.json`)
@@ -51,6 +51,7 @@ export default async () => {
   updateProps({ plugins, props_path })
   updatePlugins({ json: plugins, json_path })
   updateApis({ plugins })
+  updateFunctions({ plugins })
 
   process.exit()
 }

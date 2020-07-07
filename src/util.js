@@ -1,4 +1,4 @@
-import { complement, isNil } from "ramda"
+import { complement, isNil, filter } from "ramda"
 const xNil = complement(isNil)
 import fs from "fs-extra"
 import path from "path"
@@ -22,6 +22,9 @@ export const getPre = name =>
 export const modName = name =>
   /\//.test(name) ? name : `warashibe.nextdapp/${name}`
 
+export const modFuncName = name =>
+  /\//.test(name) ? name : `warashibe.functions/${name}`
+
 export const resolve = to => path.resolve(process.cwd(), to)
 
 export const updateFuncs = ({ plugins, js_path }) => {
@@ -36,8 +39,8 @@ export const updateFuncs = ({ plugins, js_path }) => {
       const ns = xNil(json.namespace)
         ? `$${json.namespace}`
         : json.core
-        ? ""
-        : `$${pre}`
+          ? ""
+          : `$${pre}`
       exp.push(` ${v} as ${v}${ns}`)
       console.log(`${v}${ns}`)
     }
@@ -76,9 +79,9 @@ export const updateProps = ({ plugins, props_path }) => {
   console.log(`props has been updated!`)
 }
 
-export const spawnp = (cmd, args = []) => {
+export const spawnp = (cmd, args = [], opt = {}) => {
   return new Promise((res, rej) => {
-    const sp = spawn(cmd, args)
+    const sp = spawn(cmd, args, opt)
     sp.stdout.on("data", data => {
       console.log(`${data}`)
     })
@@ -168,4 +171,50 @@ export const updateApis = ({ plugins }) => {
       fs.unlinkSync(api_path)
     }
   }
+}
+
+const mkdir = path => {
+  const dir_path = resolve(path)
+  if (!fs.existsSync(dir_path)) {
+    fs.mkdirSync(dir_path)
+  }
+}
+export const updateFunctions = ({ plugins }) => {
+  let funcs = [`// nextdapp-start`]
+  mkdir(`firebase`)
+  mkdir(`firebase/functions`)
+  mkdir(`firebase/functions/nd`)
+  for (let pre in plugins) {
+    const json = plugins[pre]
+    const src = `nd/${json.namespace || pre}`
+    const ns = xNil(json.namespace)
+      ? `$${json.namespace}`
+      : json.core
+        ? ""
+        : `$${pre}`
+    if (xNil(json.functions)) {
+      for (const v of json.functions || []) {
+        funcs.push(`exports.${v}${ns} = require("./${pre}/index").${v}`)
+      }
+    }
+  }
+  funcs.push(`// nextdapp-end`)
+  const func_path = resolve(`firebase/functions/index.js`)
+  if (fs.existsSync(func_path)) {
+    let tar = false
+    const ex_funcs = filter(v => {
+      let isend = false
+      if (new RegExp(`// nextdapp-start`).test(v) === true) {
+        tar = true
+      } else if (new RegExp(`// nextdapp-end`).test(v) === true) {
+        tar = false
+        isend = true
+      }
+      return tar === false && isend === false && /^\s*$/.test(v) === false
+    })(fs.readFileSync(func_path, "utf-8").split("\n"))
+    funcs = ex_funcs.concat(funcs)
+  }
+  console.log(funcs.join("\n"))
+  fs.writeFileSync(func_path, funcs.join("\n"))
+  const fb_path = resolve(`firebase/functions`)
 }

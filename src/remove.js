@@ -14,12 +14,24 @@ import {
   updateFuncs,
   updateProps,
   modName,
-  updateApis
+  updateApis,
+  updateFunctions
 } from "./util"
 
 const uninstallPlugin = async ({ pre }) => {
   try {
     await spawnp("bit", ["remove", pre, "-s"])
+    console.log(`${pre} uninstalled!`)
+  } catch (error) {
+    console.error(`uninstall error: ${error}`)
+    process.exit()
+  }
+}
+
+const uninstallFunction = async ({ pre }) => {
+  const func_path = resolve("firebase/functions")
+  try {
+    await spawnp("bit", ["remove", pre, "-s"], { cwd: func_path })
     console.log(`${pre} uninstalled!`)
   } catch (error) {
     console.error(`uninstall error: ${error}`)
@@ -42,9 +54,10 @@ export default async (name, namespace) => {
 
   updateFuncs({ plugins, js_path })
   updateProps({ plugins, props_path })
-
+  await uninstallFunction({ pre, namespace })
   await uninstallPlugin({ pre, namespace })
   updatePlugins({ json: plugins, json_path })
   updateApis({ plugins })
+  updateFunctions({ plugins })
   process.exit()
 }
