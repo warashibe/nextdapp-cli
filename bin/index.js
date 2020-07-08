@@ -10,6 +10,12 @@ var remove = require("../lib/remove")["default"];
 var add = require("../lib/add")["default"];
 
 switch (command) {
+  case "keys":
+    var keys = require("../lib/generateKeys")["default"];
+
+    keys("./", name === "overwrite");
+    break;
+
   case "create":
     var create = require("../lib/create")["default"];
 
